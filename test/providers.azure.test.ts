@@ -4,6 +4,8 @@ import { OpenAiCompletionProvider } from '../src/providers/openai';
 
 import type { TestSuite, TestCase } from '../src/types';
 import { HuggingfaceTextGenerationProvider } from '../src/providers/huggingface';
+import { vi, beforeEach, afterEach, describe, expect, test, it } from 'vitest';
+
 
 describe('maybeEmitAzureOpenAiWarning', () => {
   test('should not emit warning when no Azure providers are used', () => {

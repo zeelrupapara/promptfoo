@@ -1,8 +1,8 @@
-import { installJestMatchers } from './matchers';
-
+import { installVitestMatchers } from './matchers';
+import {vi} from 'vitest';
 import type { GradingConfig } from '../../dist/types.js';
 
-installJestMatchers();
+installVitestMatchers();
 
 describe('toMatchSemanticSimilarity', () => {
   test('should pass when strings are semantically similar', async () => {

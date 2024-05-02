@@ -1,30 +1,33 @@
 import { evaluate, renderPrompt } from '../src/evaluator';
 
 import type { ApiProvider, TestSuite, Prompt } from '../src/types';
+import { vi, beforeEach, afterEach, describe, expect, test, it } from 'vitest';
 
-jest.mock('node-fetch', () => jest.fn());
 
-jest.mock('../src/esm');
+
+vi.mock('node-fetch', () => vi.fn());
+
+vi.mock('../src/esm');
 
 const mockApiProvider: ApiProvider = {
-  id: jest.fn().mockReturnValue('test-provider'),
-  callApi: jest.fn().mockResolvedValue({
+  id: vi.fn().mockReturnValue('test-provider'),
+  callApi: vi.fn().mockResolvedValue({
     output: 'Test output',
     tokenUsage: { total: 10, prompt: 5, completion: 5, cached: 0 },
   }),
 };
 
 const mockGradingApiProviderPasses: ApiProvider = {
-  id: jest.fn().mockReturnValue('test-grading-provider'),
-  callApi: jest.fn().mockResolvedValue({
+  id: vi.fn().mockReturnValue('test-grading-provider'),
+  callApi: vi.fn().mockResolvedValue({
     output: JSON.stringify({ pass: true, reason: 'Test grading output' }),
     tokenUsage: { total: 10, prompt: 5, completion: 5, cached: 0 },
   }),
 };
 
 const mockGradingApiProviderFails: ApiProvider = {
-  id: jest.fn().mockReturnValue('test-grading-provider'),
-  callApi: jest.fn().mockResolvedValue({
+  id: vi.fn().mockReturnValue('test-grading-provider'),
+  callApi: vi.fn().mockResolvedValue({
     output: JSON.stringify({ pass: false, reason: 'Grading failed reason' }),
     tokenUsage: { total: 10, prompt: 5, completion: 5, cached: 0 },
   }),
@@ -36,7 +39,7 @@ function toPrompt(text: string): Prompt {
 
 describe('evaluator', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('evaluate with vars', async () => {
@@ -413,8 +416,8 @@ describe('evaluator', () => {
 
   test('evaluate with transform option - json provider', async () => {
     const mockApiJsonProvider: ApiProvider = {
-      id: jest.fn().mockReturnValue('test-provider-json'),
-      callApi: jest.fn().mockResolvedValue({
+      id: vi.fn().mockReturnValue('test-provider-json'),
+      callApi: vi.fn().mockResolvedValue({
         output: '{"output": "testing", "value": 123}',
         tokenUsage: { total: 10, prompt: 5, completion: 5, cached: 0 },
       }),
@@ -473,8 +476,8 @@ describe('evaluator', () => {
 
   test('evaluate with scenarios', async () => {
     const mockApiProvider: ApiProvider = {
-      id: jest.fn().mockReturnValue('test-provider'),
-      callApi: jest
+      id: vi.fn().mockReturnValue('test-provider'),
+      callApi: vi
         .fn()
         .mockResolvedValueOnce({
           output: 'Hola mundo',
@@ -530,8 +533,8 @@ describe('evaluator', () => {
 
   test('evaluate with scenarios and multiple vars', async () => {
     const mockApiProvider: ApiProvider = {
-      id: jest.fn().mockReturnValue('test-provider'),
-      callApi: jest
+      id: vi.fn().mockReturnValue('test-provider'),
+      callApi: vi
         .fn()
         .mockResolvedValueOnce({
           output: 'Spanish Hola',
@@ -590,8 +593,8 @@ describe('evaluator', () => {
 
   test('evaluate with _conversation variable', async () => {
     const mockApiProvider: ApiProvider = {
-      id: jest.fn().mockReturnValue('test-provider'),
-      callApi: jest.fn().mockImplementation((prompt) => {
+      id: vi.fn().mockReturnValue('test-provider'),
+      callApi: vi.fn().mockImplementation((prompt) => {
         return Promise.resolve({
           output: prompt,
           tokenUsage: { total: 10, prompt: 5, completion: 5, cached: 0 },

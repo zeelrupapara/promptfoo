@@ -3,7 +3,7 @@ import { matchesSimilarity, matchesLlmRubric } from '../../dist/assertions.js';
 import type { GradingConfig } from '../../dist/types.js';
 
 declare global {
-  namespace jest {
+  namespace vi {
     interface Matchers<R> {
       toMatchSemanticSimilarity(expected: string, threshold?: number): R;
       toPassLLMRubric(expected: string, gradingConfig: GradingConfig): R;
@@ -11,13 +11,13 @@ declare global {
   }
 }
 
-export function installJestMatchers() {
+export function installVitestMatchers() {
   expect.extend({
     async toMatchSemanticSimilarity(
       received: string,
       expected: string,
       threshold: number = 0.8,
-    ): Promise<jest.CustomMatcherResult> {
+    ): Promise<vi.CustomMatcherResult> {
       const result = await matchesSimilarity(received, expected, threshold);
       const pass = received === expected || result.pass;
       if (pass) {
@@ -38,7 +38,7 @@ export function installJestMatchers() {
       received: string,
       expected: string,
       gradingConfig: GradingConfig,
-    ): Promise<jest.CustomMatcherResult> {
+    ): Promise<vi.CustomMatcherResult> {
       const gradingResult = await matchesLlmRubric(expected, received, gradingConfig);
       if (gradingResult.pass) {
         return {

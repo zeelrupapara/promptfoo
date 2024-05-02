@@ -6,18 +6,20 @@ import { globSync } from 'glob';
 import { readPrompts } from '../src/prompts';
 
 import type { Prompt } from '../src/types';
+import { vi, beforeEach, afterEach, describe, expect, test, it } from 'vitest';
 
-jest.mock('glob', () => ({
-  globSync: jest.fn(),
+
+vi.mock('glob', () => ({
+  globSync: vi.fn(),
 }));
 
-jest.mock('fs', () => ({
-  readFileSync: jest.fn(),
-  writeFileSync: jest.fn(),
-  statSync: jest.fn(),
-  readdirSync: jest.fn(),
-  existsSync: jest.fn(),
-  mkdirSync: jest.fn(),
+vi.mock('fs', () => ({
+  readFileSync: vi.fn(),
+  writeFileSync: vi.fn(),
+  statSync: vi.fn(),
+  readdirSync: vi.fn(),
+  existsSync: vi.fn(),
+  mkdirSync: vi.fn(),
 }));
 
 function toPrompt(text: string): Prompt {
@@ -25,15 +27,15 @@ function toPrompt(text: string): Prompt {
 }
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('prompts', () => {
   test('readPrompts with single prompt file', () => {
-    (fs.readFileSync as jest.Mock).mockReturnValue('Test prompt 1\n---\nTest prompt 2');
-    (fs.statSync as jest.Mock).mockReturnValue({ isDirectory: () => false });
+    (fs.readFileSync as vi.Mock).mockReturnValue('Test prompt 1\n---\nTest prompt 2');
+    (fs.statSync as vi.Mock).mockReturnValue({ isDirectory: () => false });
     const promptPaths = ['prompts.txt'];
-    (globSync as jest.Mock).mockImplementation((pathOrGlob) => [pathOrGlob]);
+    (globSync as vi.Mock).mockImplementation((pathOrGlob) => [pathOrGlob]);
 
     const result = readPrompts(promptPaths);
 
@@ -42,12 +44,12 @@ describe('prompts', () => {
   });
 
   test('readPrompts with multiple prompt files', () => {
-    (fs.readFileSync as jest.Mock)
+    (fs.readFileSync as vi.Mock)
       .mockReturnValueOnce('Test prompt 1')
       .mockReturnValueOnce('Test prompt 2');
-    (fs.statSync as jest.Mock).mockReturnValue({ isDirectory: () => false });
+    (fs.statSync as vi.Mock).mockReturnValue({ isDirectory: () => false });
     const promptPaths = ['prompt1.txt', 'prompt2.txt'];
-    (globSync as jest.Mock).mockImplementation((pathOrGlob) => [pathOrGlob]);
+    (globSync as vi.Mock).mockImplementation((pathOrGlob) => [pathOrGlob]);
 
     const result = readPrompts(promptPaths);
 
@@ -56,10 +58,10 @@ describe('prompts', () => {
   });
 
   test('readPrompts with directory', () => {
-    (fs.statSync as jest.Mock).mockReturnValue({ isDirectory: () => true });
-    (globSync as jest.Mock).mockImplementation((pathOrGlob) => [pathOrGlob]);
-    (fs.readdirSync as jest.Mock).mockReturnValue(['prompt1.txt', 'prompt2.txt']);
-    (fs.readFileSync as jest.Mock).mockImplementation((filePath) => {
+    (fs.statSync as vi.Mock).mockReturnValue({ isDirectory: () => true });
+    (globSync as vi.Mock).mockImplementation((pathOrGlob) => [pathOrGlob]);
+    (fs.readdirSync as vi.Mock).mockReturnValue(['prompt1.txt', 'prompt2.txt']);
+    (fs.readFileSync as vi.Mock).mockImplementation((filePath) => {
       if (filePath.endsWith(path.join('prompts', 'prompt1.txt'))) {
         return 'Test prompt 1';
       } else if (filePath.endsWith(path.join('prompts', 'prompt2.txt'))) {
@@ -77,8 +79,8 @@ describe('prompts', () => {
   });
 
   test('readPrompts with empty input', () => {
-    (fs.readFileSync as jest.Mock).mockReturnValue('');
-    (fs.statSync as jest.Mock).mockReturnValue({ isDirectory: () => false });
+    (fs.readFileSync as vi.Mock).mockReturnValue('');
+    (fs.statSync as vi.Mock).mockReturnValue({ isDirectory: () => false });
     const promptPaths = ['prompts.txt'];
 
     const result = readPrompts(promptPaths);
@@ -88,8 +90,8 @@ describe('prompts', () => {
   });
 
   test('readPrompts with map input', () => {
-    (fs.readFileSync as jest.Mock).mockReturnValue('some raw text');
-    (fs.statSync as jest.Mock).mockReturnValue({ isDirectory: () => false });
+    (fs.readFileSync as vi.Mock).mockReturnValue('some raw text');
+    (fs.statSync as vi.Mock).mockReturnValue({ isDirectory: () => false });
 
     const result = readPrompts({
       'prompts.txt': 'foo1',
@@ -114,8 +116,8 @@ describe('prompts', () => {
       ],
     ];
 
-    (fs.readFileSync as jest.Mock).mockReturnValue(data.map((o) => JSON.stringify(o)).join('\n'));
-    (fs.statSync as jest.Mock).mockReturnValue({ isDirectory: () => false });
+    (fs.readFileSync as vi.Mock).mockReturnValue(data.map((o) => JSON.stringify(o)).join('\n'));
+    (fs.statSync as vi.Mock).mockReturnValue({ isDirectory: () => false });
     const promptPaths = ['prompts.jsonl'];
 
     const result = readPrompts(promptPaths);
@@ -126,7 +128,7 @@ describe('prompts', () => {
 
   test('readPrompts with .py file', () => {
     const code = `print('dummy prompt')`;
-    (fs.readFileSync as jest.Mock).mockReturnValue(code);
+    (fs.readFileSync as vi.Mock).mockReturnValue(code);
     const result = readPrompts('prompt.py');
     expect(fs.readFileSync).toHaveBeenCalledTimes(1);
     expect(result[0].raw).toEqual(code);
@@ -135,10 +137,10 @@ describe('prompts', () => {
   });
 
   test('readPrompts with .js file', () => {
-    jest.doMock(
+    vi.doMock(
       path.resolve('prompt.js'),
       () => {
-        return jest.fn(() => console.log('dummy prompt'));
+        return vi.fn(() => console.log('dummy prompt'));
       },
       { virtual: true },
     );

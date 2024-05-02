@@ -23,12 +23,14 @@ import type {
   ProviderTypeMap,
 } from '../src/types';
 import { HuggingfaceTextClassificationProvider } from '../src/providers/huggingface';
+import { vi, beforeEach, afterEach, describe, expect, test, it } from 'vitest';
+
 
 const Grader = new TestGrader();
 
 describe('matchesSimilarity', () => {
   beforeEach(() => {
-    jest.spyOn(DefaultEmbeddingProvider, 'callEmbeddingApi').mockImplementation((text) => {
+    vi.spyOn(DefaultEmbeddingProvider, 'callEmbeddingApi').mockImplementation((text) => {
       if (text === 'Expected output' || text === 'Sample output') {
         return Promise.resolve({
           embedding: [1, 0, 0],
@@ -45,7 +47,7 @@ describe('matchesSimilarity', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should pass when similarity is above the threshold', async () => {
@@ -102,7 +104,7 @@ describe('matchesSimilarity', () => {
       },
     };
 
-    const mockCallApi = jest.spyOn(OpenAiEmbeddingProvider.prototype, 'callEmbeddingApi');
+    const mockCallApi = vi.spyOn(OpenAiEmbeddingProvider.prototype, 'callEmbeddingApi');
     mockCallApi.mockImplementation(function (this: OpenAiChatCompletionProvider) {
       expect(this.config.temperature).toBe(3.1415926);
       expect(this.getApiKey()).toBe('abc123');
@@ -134,7 +136,7 @@ describe('matchesSimilarity', () => {
       },
     };
 
-    jest
+    vi
       .spyOn(OpenAiEmbeddingProvider.prototype, 'callEmbeddingApi')
       .mockRejectedValueOnce(new Error('API call failed'));
 
@@ -165,7 +167,7 @@ describe('matchesLlmRubric', () => {
       provider: Grader,
     };
 
-    jest.spyOn(Grader, 'callApi').mockResolvedValueOnce({
+    vi.spyOn(Grader, 'callApi').mockResolvedValueOnce({
       output: JSON.stringify({ pass: false, reason: 'Grading failed' }),
       tokenUsage: { total: 10, prompt: 5, completion: 5 },
     });
@@ -189,7 +191,7 @@ describe('matchesLlmRubric', () => {
       },
     };
 
-    const mockCallApi = jest.spyOn(OpenAiChatCompletionProvider.prototype, 'callApi');
+    const mockCallApi = vi.spyOn(OpenAiChatCompletionProvider.prototype, 'callApi');
     mockCallApi.mockImplementation(function (this: OpenAiChatCompletionProvider) {
       expect(this.config.temperature).toBe(3.1415926);
       expect(this.getApiKey()).toBe('abc123');
@@ -215,7 +217,7 @@ describe('matchesFactuality', () => {
     const output = 'Sample output';
     const grading = {};
 
-    jest.spyOn(DefaultGradingProvider, 'callApi').mockResolvedValueOnce({
+    vi.spyOn(DefaultGradingProvider, 'callApi').mockResolvedValueOnce({
       output:
         '(A) The submitted answer is a subset of the expert answer and is fully consistent with it.',
       tokenUsage: { total: 10, prompt: 5, completion: 5 },
@@ -233,7 +235,7 @@ describe('matchesFactuality', () => {
     const expected = 'Expected output';
     const output = 'Sample output';
     const grading = {};
-    jest.spyOn(DefaultGradingProvider, 'callApi').mockResolvedValueOnce({
+    vi.spyOn(DefaultGradingProvider, 'callApi').mockResolvedValueOnce({
       output: '(D) There is a disagreement between the submitted answer and the expert answer.',
       tokenUsage: { total: 10, prompt: 5, completion: 5 },
     });
@@ -259,7 +261,7 @@ describe('matchesFactuality', () => {
       },
     };
 
-    jest.spyOn(DefaultGradingProvider, 'callApi').mockResolvedValueOnce({
+    vi.spyOn(DefaultGradingProvider, 'callApi').mockResolvedValueOnce({
       output:
         '(A) The submitted answer is a subset of the expert answer and is fully consistent with it.',
       tokenUsage: { total: 10, prompt: 5, completion: 5 },
@@ -279,7 +281,7 @@ describe('matchesFactuality', () => {
     const output = 'Sample output';
     const grading = {};
 
-    jest.spyOn(DefaultGradingProvider, 'callApi').mockImplementation(() => {
+    vi.spyOn(DefaultGradingProvider, 'callApi').mockImplementation(() => {
       throw new Error('An error occurred');
     });
 
@@ -296,7 +298,7 @@ describe('matchesClosedQa', () => {
     const output = 'Sample output';
     const grading = {};
 
-    jest.spyOn(DefaultGradingProvider, 'callApi').mockResolvedValueOnce({
+    vi.spyOn(DefaultGradingProvider, 'callApi').mockResolvedValueOnce({
       output: 'foo \n \n bar\n Y Y',
       tokenUsage: { total: 10, prompt: 5, completion: 5 },
     });
@@ -312,7 +314,7 @@ describe('matchesClosedQa', () => {
     const output = 'Sample output';
     const grading = {};
 
-    jest.spyOn(DefaultGradingProvider, 'callApi').mockResolvedValueOnce({
+    vi.spyOn(DefaultGradingProvider, 'callApi').mockResolvedValueOnce({
       output: 'foo bar N',
       tokenUsage: { total: 10, prompt: 5, completion: 5 },
     });
@@ -328,7 +330,7 @@ describe('matchesClosedQa', () => {
     const output = 'Sample output';
     const grading = {};
 
-    jest.spyOn(DefaultGradingProvider, 'callApi').mockImplementation(() => {
+    vi.spyOn(DefaultGradingProvider, 'callApi').mockImplementation(() => {
       throw new Error('An error occurred');
     });
 
@@ -344,7 +346,7 @@ describe('matchesClosedQa', () => {
     const grading = {};
 
     let isJson = false;
-    jest.spyOn(DefaultGradingProvider, 'callApi').mockImplementation((prompt) => {
+    vi.spyOn(DefaultGradingProvider, 'callApi').mockImplementation((prompt) => {
       try {
         JSON.parse(prompt);
         isJson = true;
@@ -504,7 +506,7 @@ describe('matchesAnswerRelevance', () => {
     const output = 'Sample output';
     const threshold = 0.5;
 
-    const mockCallApi = jest.spyOn(DefaultGradingProvider, 'callApi');
+    const mockCallApi = vi.spyOn(DefaultGradingProvider, 'callApi');
     mockCallApi.mockImplementation(() => {
       return Promise.resolve({
         output: 'foobar',
@@ -512,7 +514,7 @@ describe('matchesAnswerRelevance', () => {
       });
     });
 
-    const mockCallEmbeddingApi = jest.spyOn(DefaultEmbeddingProvider, 'callEmbeddingApi');
+    const mockCallEmbeddingApi = vi.spyOn(DefaultEmbeddingProvider, 'callEmbeddingApi');
     mockCallEmbeddingApi.mockImplementation(function (this: OpenAiEmbeddingProvider) {
       return Promise.resolve({
         embedding: [1, 0, 0],
@@ -535,7 +537,7 @@ describe('matchesAnswerRelevance', () => {
     const output = 'Different output';
     const threshold = 0.5;
 
-    const mockCallApi = jest.spyOn(DefaultGradingProvider, 'callApi');
+    const mockCallApi = vi.spyOn(DefaultGradingProvider, 'callApi');
     mockCallApi.mockImplementation((text) => {
       return Promise.resolve({
         output: text,
@@ -543,7 +545,7 @@ describe('matchesAnswerRelevance', () => {
       });
     });
 
-    const mockCallEmbeddingApi = jest.spyOn(DefaultEmbeddingProvider, 'callEmbeddingApi');
+    const mockCallEmbeddingApi = vi.spyOn(DefaultEmbeddingProvider, 'callEmbeddingApi');
     mockCallEmbeddingApi.mockImplementation((text) => {
       if (text.includes('Input text')) {
         return Promise.resolve({
@@ -631,7 +633,7 @@ describe('matchesClassification', () => {
       },
     };
 
-    const mockCallApi = jest.spyOn(
+    const mockCallApi = vi.spyOn(
       HuggingfaceTextClassificationProvider.prototype,
       'callClassificationApi',
     );
@@ -656,7 +658,7 @@ describe('matchesContextRelevance', () => {
     const context = 'Context text';
     const threshold = 0.5;
 
-    const mockCallApi = jest.spyOn(DefaultGradingProvider, 'callApi');
+    const mockCallApi = vi.spyOn(DefaultGradingProvider, 'callApi');
     mockCallApi.mockImplementation(() => {
       return Promise.resolve({
         output: 'foo\nbar\nbaz Insufficient Information',
@@ -677,7 +679,7 @@ describe('matchesContextRelevance', () => {
     const context = 'Context text';
     const threshold = 0.9;
 
-    const mockCallApi = jest.spyOn(DefaultGradingProvider, 'callApi');
+    const mockCallApi = vi.spyOn(DefaultGradingProvider, 'callApi');
     mockCallApi.mockImplementation(() => {
       return Promise.resolve({
         output: 'foo\nbar\nbaz Insufficient Information',
@@ -701,7 +703,7 @@ describe('matchesContextFaithfulness', () => {
     const context = 'Context text';
     const threshold = 0.5;
 
-    const mockCallApi = jest.spyOn(DefaultGradingProvider, 'callApi');
+    const mockCallApi = vi.spyOn(DefaultGradingProvider, 'callApi');
     mockCallApi
       .mockImplementationOnce(() => {
         return Promise.resolve({
@@ -730,7 +732,7 @@ describe('matchesContextFaithfulness', () => {
     const context = 'Context text';
     const threshold = 0.7;
 
-    const mockCallApi = jest.spyOn(DefaultGradingProvider, 'callApi');
+    const mockCallApi = vi.spyOn(DefaultGradingProvider, 'callApi');
     mockCallApi
       .mockImplementationOnce(() => {
         return Promise.resolve({
@@ -760,7 +762,7 @@ describe('matchesContextRecall', () => {
     const groundTruth = 'Ground truth text';
     const threshold = 0.5;
 
-    const mockCallApi = jest.spyOn(DefaultGradingProvider, 'callApi');
+    const mockCallApi = vi.spyOn(DefaultGradingProvider, 'callApi');
     mockCallApi.mockImplementation(() => {
       return Promise.resolve({
         output: 'foo [Attributed]\nbar [Not attributed]\nbaz [Attributed]',
@@ -781,7 +783,7 @@ describe('matchesContextRecall', () => {
     const groundTruth = 'Ground truth text';
     const threshold = 0.9;
 
-    const mockCallApi = jest.spyOn(DefaultGradingProvider, 'callApi');
+    const mockCallApi = vi.spyOn(DefaultGradingProvider, 'callApi');
     mockCallApi.mockImplementation(() => {
       return Promise.resolve({
         output: 'foo [Attributed]\nbar [Not attributed]\nbaz [Attributed]',

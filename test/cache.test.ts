@@ -1,8 +1,10 @@
 import { fetchWithCache, disableCache, enableCache } from '../src/cache';
 import fetch, { Response } from 'node-fetch';
+import { vi, beforeEach, afterEach, describe, expect, test, it } from 'vitest';
 
-jest.mock('node-fetch');
-const mockedFetch = fetch as jest.MockedFunction<typeof fetch>;
+
+vi.mock('node-fetch');
+const mockedFetch = fetch as vi.MockedFunction<typeof fetch>;
 
 const mockedFetchResponse = (ok: boolean, response: object) => {
   return {

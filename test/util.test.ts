@@ -1,10 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
-
+import { vi, beforeEach, afterEach, describe, expect, test, it } from 'vitest';
 import { globSync } from 'glob';
 
 import yaml from 'js-yaml';
-
 import {
   dereferenceConfig,
   maybeRecordFirstRun,
@@ -17,28 +16,30 @@ import {
 } from '../src/util';
 
 import type { EvaluateResult, EvaluateTable, UnifiedConfig } from '../src/types';
+import 'vitest/globals';
+vitest.global()
 
-jest.mock('proxy-agent', () => ({
-  ProxyAgent: jest.fn().mockImplementation(() => ({})),
+vi.mock('proxy-agent', () => ({
+  ProxyAgent: vi.fn().mockImplementation(() => ({})),
 }));
 
-jest.mock('glob', () => ({
-  globSync: jest.fn(),
+vi.mock('glob', () => ({
+  globSync: vi.fn(),
 }));
 
-jest.mock('fs', () => ({
-  readFileSync: jest.fn(),
-  writeFileSync: jest.fn(),
-  statSync: jest.fn(),
-  readdirSync: jest.fn(),
-  existsSync: jest.fn(),
-  mkdirSync: jest.fn(),
+vi.mock('fs', () => ({
+  readFileSync: vi.fn(),
+  writeFileSync: vi.fn(),
+  statSync: vi.fn(),
+  readdirSync: vi.fn(),
+  existsSync: vi.fn(),
+  mkdirSync: vi.fn(),
 }));
 
-jest.mock('../src/esm');
+vi.mock('../src/esm');
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('util', () => {
@@ -328,14 +329,14 @@ describe('util', () => {
 
   describe('readCliConfig', () => {
     afterEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
       resetGlobalConfig();
     });
 
     test('reads from existing config', () => {
       const config = { hasRun: false };
-      (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.readFileSync as jest.Mock).mockReturnValue(yaml.dump(config));
+      (fs.existsSync as vi.Mock).mockReturnValue(true);
+      (fs.readFileSync as vi.Mock).mockReturnValue(yaml.dump(config));
 
       const result = readGlobalConfig();
 
@@ -345,8 +346,8 @@ describe('util', () => {
     });
 
     test('creates new config if none exists', () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(false);
-      (fs.writeFileSync as jest.Mock).mockImplementation();
+      (fs.existsSync as vi.Mock).mockReturnValue(false);
+      (fs.writeFileSync as vi.Mock).mockImplementation();
 
       const result = readGlobalConfig();
 
@@ -359,12 +360,12 @@ describe('util', () => {
   describe('maybeRecordFirstRun', () => {
     afterEach(() => {
       resetGlobalConfig();
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     test('returns true if it is the first run', () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(false);
-      (fs.writeFileSync as jest.Mock).mockImplementation();
+      (fs.existsSync as vi.Mock).mockReturnValue(false);
+      (fs.writeFileSync as vi.Mock).mockImplementation();
 
       const result = maybeRecordFirstRun();
 
@@ -374,8 +375,8 @@ describe('util', () => {
 
     test('returns false if it is not the first run', () => {
       const config = { hasRun: true };
-      (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.readFileSync as jest.Mock).mockReturnValue(yaml.dump(config));
+      (fs.existsSync as vi.Mock).mockReturnValue(true);
+      (fs.readFileSync as vi.Mock).mockReturnValue(yaml.dump(config));
 
       const result = maybeRecordFirstRun();
 
@@ -385,10 +386,10 @@ describe('util', () => {
   });
 
   test('readFilters', () => {
-    const mockFilter = jest.fn();
-    jest.doMock(path.resolve('filter.js'), () => mockFilter, { virtual: true });
+    const mockFilter = vi.fn();
+    vi.doMock(path.resolve('filter.js'), () => mockFilter, { virtual: true });
 
-    (globSync as jest.Mock).mockImplementation((pathOrGlob) => [pathOrGlob]);
+    (globSync as vi.Mock).mockImplementation((pathOrGlob) => [pathOrGlob]);
 
     const filters = readFilters({ testFilter: 'filter.js' });
 
@@ -432,8 +433,8 @@ describe('util', () => {
         sharing: true,
       };
 
-      (globSync as jest.Mock).mockImplementation((pathOrGlob) => [pathOrGlob]);
-      (fs.readFileSync as jest.Mock)
+      (globSync as vi.Mock).mockImplementation((pathOrGlob) => [pathOrGlob]);
+      (fs.readFileSync as vi.Mock)
         .mockReturnValueOnce(JSON.stringify(config1))
         .mockReturnValueOnce(JSON.stringify(config2))
         .mockReturnValueOnce(JSON.stringify(config1))
@@ -441,8 +442,8 @@ describe('util', () => {
         .mockReturnValue('you should not see this');
 
       // Mocks for prompt loading
-      (fs.readdirSync as jest.Mock).mockReturnValue([]);
-      (fs.statSync as jest.Mock).mockImplementation(() => {
+      (fs.readdirSync as vi.Mock).mockReturnValue([]);
+      (fs.statSync as vi.Mock).mockImplementation(() => {
         throw new Error('File does not exist');
       });
 
@@ -513,7 +514,7 @@ describe('util', () => {
     });
 
     test('throws error for unsupported configuration file format', async () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(true);
+      (fs.existsSync as vi.Mock).mockReturnValue(true);
 
       await expect(readConfigs(['config1.unsupported'])).rejects.toThrow(
         'Unsupported configuration file format: .unsupported',
@@ -521,8 +522,8 @@ describe('util', () => {
     });
 
     test('makeAbsolute should resolve file:// syntax and plaintext prompts', async () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.readFileSync as jest.Mock).mockImplementation((path: string) => {
+      (fs.existsSync as vi.Mock).mockReturnValue(true);
+      (fs.readFileSync as vi.Mock).mockImplementation((path: string) => {
         if (path === 'config1.json') {
           return JSON.stringify({
             description: 'test1',

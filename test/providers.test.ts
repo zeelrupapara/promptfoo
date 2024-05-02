@@ -28,54 +28,56 @@ import {
 import { ScriptCompletionProvider } from '../src/providers/scriptCompletion';
 
 import type { ProviderOptionsMap, ProviderFunction } from '../src/types';
+import { vi, beforeEach, afterEach, describe, expect, test, it } from 'vitest';
 
-jest.mock('fs', () => ({
-  readFileSync: jest.fn(),
-  writeFileSync: jest.fn(),
-  statSync: jest.fn(),
-  readdirSync: jest.fn(),
-  existsSync: jest.fn(),
-  mkdirSync: jest.fn(),
+
+vi.mock('fs', () => ({
+  readFileSync: vi.fn(),
+  writeFileSync: vi.fn(),
+  statSync: vi.fn(),
+  readdirSync: vi.fn(),
+  existsSync: vi.fn(),
+  mkdirSync: vi.fn(),
   promises: {
-    readFile: jest.fn(),
+    readFile: vi.fn(),
   },
 }));
 
-jest.mock('glob', () => ({
-  globSync: jest.fn(),
+vi.mock('glob', () => ({
+  globSync: vi.fn(),
 }));
 
-jest.mock('node-fetch', () => jest.fn());
-jest.mock('proxy-agent', () => ({
-  ProxyAgent: jest.fn().mockImplementation(() => ({})),
+vi.mock('node-fetch', () => vi.fn());
+vi.mock('proxy-agent', () => ({
+  ProxyAgent: vi.fn().mockImplementation(() => ({})),
 }));
 
-jest.mock('../src/esm');
+vi.mock('../src/esm');
 
-jest.mock('fs', () => ({
-  readFileSync: jest.fn(),
-  existsSync: jest.fn(),
-  mkdirSync: jest.fn(),
+vi.mock('fs', () => ({
+  readFileSync: vi.fn(),
+  existsSync: vi.fn(),
+  mkdirSync: vi.fn(),
 }));
 
-jest.mock('glob', () => ({
-  globSync: jest.fn(),
+vi.mock('glob', () => ({
+  globSync: vi.fn(),
 }));
 
 describe('call provider apis', () => {
   afterEach(async () => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     await clearCache();
   });
 
   test('OpenAiCompletionProvider callApi', async () => {
     const mockResponse = {
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [{ text: 'Test output' }],
         usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
       }),
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new OpenAiCompletionProvider('text-davinci-003');
     const result = await provider.callApi('Test prompt');
@@ -87,13 +89,13 @@ describe('call provider apis', () => {
 
   test('OpenAiChatCompletionProvider callApi', async () => {
     const mockResponse = {
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [{ message: { content: 'Test output' } }],
         usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
       }),
       ok: true,
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new OpenAiChatCompletionProvider('gpt-3.5-turbo');
     const result = await provider.callApi(
@@ -107,13 +109,13 @@ describe('call provider apis', () => {
 
   test('OpenAiChatCompletionProvider callApi with caching', async () => {
     const mockResponse = {
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [{ message: { content: 'Test output 2' } }],
         usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
       }),
       ok: true,
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new OpenAiChatCompletionProvider('gpt-3.5-turbo');
     const result = await provider.callApi(
@@ -135,13 +137,13 @@ describe('call provider apis', () => {
 
   test('OpenAiChatCompletionProvider callApi with cache disabled', async () => {
     const mockResponse = {
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [{ message: { content: 'Test output' } }],
         usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
       }),
       ok: true,
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new OpenAiChatCompletionProvider('gpt-3.5-turbo');
     const result = await provider.callApi(
@@ -186,12 +188,12 @@ describe('call provider apis', () => {
 
   test('AzureOpenAiCompletionProvider callApi', async () => {
     const mockResponse = {
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [{ text: 'Test output' }],
         usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
       }),
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new AzureOpenAiCompletionProvider('text-davinci-003');
     const result = await provider.callApi('Test prompt');
@@ -203,12 +205,12 @@ describe('call provider apis', () => {
 
   test('AzureOpenAiChatCompletionProvider callApi', async () => {
     const mockResponse = {
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [{ message: { content: 'Test output' } }],
         usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
       }),
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new AzureOpenAiChatCompletionProvider('gpt-3.5-turbo');
     const result = await provider.callApi(
@@ -224,12 +226,12 @@ describe('call provider apis', () => {
     disableCache();
 
     const mockResponse = {
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         choices: [{ message: { content: 'Test output' } }],
         usage: { total_tokens: 10, prompt_tokens: 5, completion_tokens: 5 },
       }),
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new AzureOpenAiChatCompletionProvider('gpt-3.5-turbo');
     const result = await provider.callApi(
@@ -245,7 +247,7 @@ describe('call provider apis', () => {
 
   test('AnthropicCompletionProvider callApi', async () => {
     const provider = new AnthropicCompletionProvider('claude-1');
-    provider.anthropic.completions.create = jest.fn().mockResolvedValue({
+    provider.anthropic.completions.create = vi.fn().mockResolvedValue({
       completion: 'Test output',
     });
     const result = await provider.callApi('Test prompt');
@@ -257,7 +259,7 @@ describe('call provider apis', () => {
 
   test('AnthropicCompletionProvider callApi with caching', async () => {
     const provider = new AnthropicCompletionProvider('claude-1');
-    provider.anthropic.completions.create = jest.fn().mockResolvedValue({
+    provider.anthropic.completions.create = vi.fn().mockResolvedValue({
       completion: 'Test output',
     });
     const result = await provider.callApi('Test prompt');
@@ -266,7 +268,7 @@ describe('call provider apis', () => {
     expect(result.output).toBe('Test output');
     expect(result.tokenUsage).toEqual({});
 
-    (provider.anthropic.completions.create as jest.Mock).mockClear();
+    (provider.anthropic.completions.create as vi.Mock).mockClear();
     const result2 = await provider.callApi('Test prompt');
 
     expect(provider.anthropic.completions.create).toHaveBeenCalledTimes(0);
@@ -276,7 +278,7 @@ describe('call provider apis', () => {
 
   test('AnthropicCompletionProvider callApi with caching disabled', async () => {
     const provider = new AnthropicCompletionProvider('claude-1');
-    provider.anthropic.completions.create = jest.fn().mockResolvedValue({
+    provider.anthropic.completions.create = vi.fn().mockResolvedValue({
       completion: 'Test output',
     });
     const result = await provider.callApi('Test prompt');
@@ -285,7 +287,7 @@ describe('call provider apis', () => {
     expect(result.output).toBe('Test output');
     expect(result.tokenUsage).toEqual({});
 
-    (provider.anthropic.completions.create as jest.Mock).mockClear();
+    (provider.anthropic.completions.create as vi.Mock).mockClear();
 
     disableCache();
 
@@ -298,11 +300,11 @@ describe('call provider apis', () => {
 
   test('LlamaProvider callApi', async () => {
     const mockResponse = {
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         content: 'Test output',
       }),
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new LlamaProvider('llama.cpp');
     const result = await provider.callApi('Test prompt');
@@ -313,7 +315,7 @@ describe('call provider apis', () => {
 
   test('OllamaCompletionProvider callApi', async () => {
     const mockResponse = {
-      text: jest.fn()
+      text: vi.fn()
         .mockResolvedValue(`{"model":"llama2:13b","created_at":"2023-08-08T21:50:34.898068Z","response":"Gre","done":false}
 {"model":"llama2:13b","created_at":"2023-08-08T21:50:34.929199Z","response":"at","done":false}
 {"model":"llama2:13b","created_at":"2023-08-08T21:50:34.959989Z","response":" question","done":false}
@@ -324,7 +326,7 @@ describe('call provider apis', () => {
 {"model":"llama2:13b","created_at":"2023-08-08T21:50:35.117166Z","response":" blue","done":false}
 {"model":"llama2:13b","created_at":"2023-08-08T21:50:41.695299Z","done":true,"context":[1,29871,1,13,9314],"total_duration":10411943458,"load_duration":458333,"sample_count":217,"sample_duration":154566000,"prompt_eval_count":11,"prompt_eval_duration":3334582000,"eval_count":216,"eval_duration":6905134000}`),
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new OllamaCompletionProvider('llama');
     const result = await provider.callApi('Test prompt');
@@ -335,7 +337,7 @@ describe('call provider apis', () => {
 
   test('OllamaChatProvider callApi', async () => {
     const mockResponse = {
-      text: jest.fn()
+      text: vi.fn()
         .mockResolvedValue(`{"model":"orca-mini","created_at":"2023-12-16T01:46:19.263682972Z","message":{"role":"assistant","content":" Because","images":null},"done":false}
 {"model":"orca-mini","created_at":"2023-12-16T01:46:19.275143974Z","message":{"role":"assistant","content":" of","images":null},"done":false}
 {"model":"orca-mini","created_at":"2023-12-16T01:46:19.288137727Z","message":{"role":"assistant","content":" Ray","images":null},"done":false}
@@ -344,7 +346,7 @@ describe('call provider apis', () => {
 {"model":"orca-mini","created_at":"2023-12-16T01:46:19.324309782Z","message":{"role":"assistant","content":".","images":null},"done":false}
 {"model":"orca-mini","created_at":"2023-12-16T01:46:19.337165395Z","done":true,"total_duration":1486443841,"load_duration":1280794143,"prompt_eval_count":35,"prompt_eval_duration":142384000,"eval_count":6,"eval_duration":61912000}`),
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new OllamaChatProvider('llama');
     const result = await provider.callApi('Test prompt');
@@ -355,11 +357,11 @@ describe('call provider apis', () => {
 
   test('WebhookProvider callApi', async () => {
     const mockResponse = {
-      json: jest.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
         output: 'Test output',
       }),
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new WebhookProvider('http://example.com/webhook');
     const result = await provider.callApi('Test prompt');
@@ -374,9 +376,9 @@ describe('call provider apis', () => {
   ])('HuggingfaceTextGenerationProvider callApi with %s', (format, mockedData) => {
     test('returns expected output', async () => {
       const mockResponse = {
-        json: jest.fn().mockResolvedValue(mockedData),
+        json: vi.fn().mockResolvedValue(mockedData),
       };
-      (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+      (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
       const provider = new HuggingfaceTextGenerationProvider('gpt2');
       const result = await provider.callApi('Test prompt');
@@ -388,9 +390,9 @@ describe('call provider apis', () => {
 
   test('HuggingfaceFeatureExtractionProvider callEmbeddingApi', async () => {
     const mockResponse = {
-      json: jest.fn().mockResolvedValue([0.1, 0.2, 0.3, 0.4, 0.5]),
+      json: vi.fn().mockResolvedValue([0.1, 0.2, 0.3, 0.4, 0.5]),
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new HuggingfaceFeatureExtractionProvider('distilbert-base-uncased');
     const result = await provider.callEmbeddingApi('Test text');
@@ -413,9 +415,9 @@ describe('call provider apis', () => {
       ],
     ];
     const mockResponse = {
-      json: jest.fn().mockResolvedValue(mockClassification),
+      json: vi.fn().mockResolvedValue(mockClassification),
     };
-    (fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
     const provider = new HuggingfaceTextClassificationProvider('foo');
     const result = await provider.callClassificationApi('Test text');
@@ -439,7 +441,7 @@ describe('call provider apis', () => {
         stdout: new Stream.Readable(),
         stderr: new Stream.Readable(),
       } as child_process.ChildProcess;
-      jest
+      vi
         .spyOn(child_process, 'execFile')
         .mockImplementation(
           (
@@ -487,7 +489,7 @@ describe('call provider apis', () => {
       expect(result.output).toBe(mockResponse);
       expect(child_process.execFile).toHaveBeenCalledTimes(1);
 
-      jest.restoreAllMocks();
+      vi.restoreAllMocks();
     });
   });
 });
@@ -497,7 +499,7 @@ describe('loadApiProvider', () => {
     const mockYamlContent = `id: 'openai:gpt-4'
 config:
   key: 'value'`;
-    (fs.readFileSync as jest.Mock).mockReturnValueOnce(mockYamlContent);
+    (fs.readFileSync as vi.Mock).mockReturnValueOnce(mockYamlContent);
 
     const provider = await loadApiProvider('file://path/to/mock-provider-file.yaml');
     expect(provider.id()).toBe('openai:gpt-4');

@@ -2,10 +2,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import child_process from 'child_process';
 import Stream from 'stream';
+import { vi, beforeEach, afterEach, describe, expect, test, it } from 'vitest';
 
 import { Response } from 'node-fetch';
 import { runAssertions, runAssertion, assertionFromString } from '../src/assertions';
 import * as fetch from '../src/fetch';
+
+
 
 import type {
   Assertion,
@@ -16,18 +19,18 @@ import type {
 } from '../src/types';
 import { OpenAiChatCompletionProvider } from '../src/providers/openai';
 
-jest.mock('proxy-agent', () => ({
-  ProxyAgent: jest.fn().mockImplementation(() => ({})),
+vi.mock('proxy-agent', () => ({
+  ProxyAgent: vi.fn().mockImplementation(() => ({})),
 }));
 
-jest.mock('glob', () => ({
-  globSync: jest.fn(),
+vi.mock('glob', () => ({
+  globSync: vi.fn(),
 }));
 
-jest.mock('fs', () => ({
-  readFileSync: jest.fn(),
+vi.mock('fs', () => ({
+  readFileSync: vi.fn(),
   promises: {
-    readFile: jest.fn(),
+    readFile: vi.fn(),
   },
 }));
 
@@ -46,7 +49,7 @@ export class TestGrader implements ApiProvider {
 const Grader = new TestGrader();
 
 beforeEach(() => {
-  jest.resetModules();
+  vi.resetModules();
 });
 
 describe('runAssertions', () => {
@@ -417,7 +420,7 @@ describe('runAssertion', () => {
       value: 'file:///schema.json',
     };
 
-    (fs.readFileSync as jest.Mock).mockReturnValue(
+    (fs.readFileSync as vi.Mock).mockReturnValue(
       JSON.stringify({
         required: ['latitude', 'longitude'],
         type: 'object',
@@ -456,7 +459,7 @@ describe('runAssertion', () => {
       value: 'file:///schema.json',
     };
 
-    (fs.readFileSync as jest.Mock).mockReturnValue(
+    (fs.readFileSync as vi.Mock).mockReturnValue(
       JSON.stringify({
         required: ['latitude', 'longitude'],
         type: 'object',
@@ -569,7 +572,7 @@ describe('runAssertion', () => {
       value: 'file:///schema.json',
     };
 
-    (fs.readFileSync as jest.Mock).mockReturnValue(
+    (fs.readFileSync as vi.Mock).mockReturnValue(
       JSON.stringify({
         required: ['latitude', 'longitude'],
         type: 'object',
@@ -608,7 +611,7 @@ describe('runAssertion', () => {
       value: 'file:///schema.json',
     };
 
-    (fs.readFileSync as jest.Mock).mockReturnValue(
+    (fs.readFileSync as vi.Mock).mockReturnValue(
       JSON.stringify({
         required: ['latitude', 'longitude'],
         type: 'object',
@@ -1182,7 +1185,7 @@ describe('runAssertion', () => {
   it('should pass when the webhook assertion passes', async () => {
     const output = 'Expected output';
 
-    jest
+    vi
       .spyOn(fetch, 'fetchWithRetries')
       .mockImplementation(() =>
         Promise.resolve(new Response(JSON.stringify({ pass: true }), { status: 200 })),
@@ -1202,7 +1205,7 @@ describe('runAssertion', () => {
   it('should fail when the webhook assertion fails', async () => {
     const output = 'Different output';
 
-    jest
+    vi
       .spyOn(fetch, 'fetchWithRetries')
       .mockImplementation(() =>
         Promise.resolve(new Response(JSON.stringify({ pass: false }), { status: 200 })),
@@ -1222,7 +1225,7 @@ describe('runAssertion', () => {
   it('should fail when the webhook returns an error', async () => {
     const output = 'Expected output';
 
-    jest
+    vi
       .spyOn(fetch, 'fetchWithRetries')
       .mockImplementation(() => Promise.resolve(new Response('', { status: 500 })));
 
@@ -1381,33 +1384,33 @@ describe('runAssertion', () => {
   it.each([
     [
       'boolean',
-      jest.fn((output: string) => output === 'Expected output'),
+      vi.fn((output: string) => output === 'Expected output'),
       true,
       'Assertion passed',
     ],
-    ['number', jest.fn((output: string) => output.length), true, 'Assertion passed'],
+    ['number', vi.fn((output: string) => output.length), true, 'Assertion passed'],
     [
       'GradingResult',
-      jest.fn((output: string) => ({ pass: true, score: 1, reason: 'Custom reason' })),
+      vi.fn((output: string) => ({ pass: true, score: 1, reason: 'Custom reason' })),
       true,
       'Custom reason',
     ],
     [
       'boolean',
-      jest.fn((output: string) => output !== 'Expected output'),
+      vi.fn((output: string) => output !== 'Expected output'),
       false,
       'Custom function returned false',
     ],
-    ['number', jest.fn((output: string) => 0), false, 'Custom function returned false'],
+    ['number', vi.fn((output: string) => 0), false, 'Custom function returned false'],
     [
       'GradingResult',
-      jest.fn((output: string) => ({ pass: false, score: 0.1, reason: 'Custom reason' })),
+      vi.fn((output: string) => ({ pass: false, score: 0.1, reason: 'Custom reason' })),
       false,
       'Custom reason',
     ],
     [
       'boolean Promise',
-      jest.fn((output: string) => Promise.resolve(true)),
+      vi.fn((output: string) => Promise.resolve(true)),
       true,
       'Assertion passed',
     ],
@@ -1416,7 +1419,7 @@ describe('runAssertion', () => {
     async (type, mockFn, expectedPass, expectedReason) => {
       const output = 'Expected output';
 
-      jest.doMock(path.resolve('/path/to/assert.js'), () => mockFn, { virtual: true });
+      vi.doMock(path.resolve('/path/to/assert.js'), () => mockFn, { virtual: true });
 
       const fileAssertion: Assertion = {
         type: 'javascript',
@@ -1461,7 +1464,7 @@ describe('runAssertion', () => {
       },
     };
 
-    jest.spyOn(child_process, 'spawn').mockImplementation((command, args, options) => {
+    vi.spyOn(child_process, 'spawn').mockImplementation((command, args, options) => {
       expect(command).toBe('python');
       expect(args).toEqual(
         expect.arrayContaining([
@@ -1500,7 +1503,7 @@ print(json.dumps(eval(value)))`,
     expect(result.pass).toBeTruthy();
     expect(child_process.spawn).toHaveBeenCalledTimes(1);
 
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should fail with stderr', async () => {
@@ -1528,7 +1531,7 @@ print(json.dumps(eval(value)))`,
       },
     };
 
-    jest.spyOn(child_process, 'spawn').mockImplementation((command, args, options) => {
+    vi.spyOn(child_process, 'spawn').mockImplementation((command, args, options) => {
       expect(command).toBe('python');
       expect(args).toEqual(
         expect.arrayContaining([
@@ -1566,7 +1569,7 @@ print(json.dumps(eval(value)))`,
     expect(result.pass).toBeFalsy();
     expect(child_process.spawn).toHaveBeenCalledTimes(1);
 
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it.each([
@@ -1595,7 +1598,7 @@ print(json.dumps(eval(value)))`,
         stdout: new Stream.Readable(),
         stderr: new Stream.Readable(),
       } as child_process.ChildProcess;
-      jest
+      vi
         .spyOn(child_process, 'execFile')
         .mockImplementation(
           (
@@ -1643,7 +1646,7 @@ print(json.dumps(eval(value)))`,
       expect(result.reason).toContain(expectedReason);
       expect(child_process.execFile).toHaveBeenCalledTimes(1);
 
-      jest.resetAllMocks();
+      vi.resetAllMocks();
     },
   );
 
@@ -1708,7 +1711,7 @@ print(json.dumps(eval(value)))`,
     it('should pass when the perplexity assertion passes', async () => {
       const logProbs = [-0.2, -0.4, -0.1, -0.3]; // Dummy logProbs for testing
       const provider = {
-        callApi: jest.fn().mockResolvedValue({ logProbs }),
+        callApi: vi.fn().mockResolvedValue({ logProbs }),
       } as unknown as ApiProvider;
 
       const result: GradingResult = await runAssertion({
@@ -1729,7 +1732,7 @@ print(json.dumps(eval(value)))`,
     it('should fail when the perplexity assertion fails', async () => {
       const logProbs = [-0.2, -0.4, -0.1, -0.3]; // Dummy logProbs for testing
       const provider = {
-        callApi: jest.fn().mockResolvedValue({ logProbs }),
+        callApi: vi.fn().mockResolvedValue({ logProbs }),
       } as unknown as ApiProvider;
 
       const result: GradingResult = await runAssertion({
@@ -1752,7 +1755,7 @@ print(json.dumps(eval(value)))`,
     it('should pass when the perplexity-score assertion passes', async () => {
       const logProbs = [-0.2, -0.4, -0.1, -0.3]; 
       const provider = {
-        callApi: jest.fn().mockResolvedValue({ logProbs }),
+        callApi: vi.fn().mockResolvedValue({ logProbs }),
       } as unknown as ApiProvider;
 
       const result: GradingResult = await runAssertion({
@@ -1773,7 +1776,7 @@ print(json.dumps(eval(value)))`,
     it('should fail when the perplexity-score assertion fails', async () => {
       const logProbs = [-0.2, -0.4, -0.1, -0.3];
       const provider = {
-        callApi: jest.fn().mockResolvedValue({ logProbs }),
+        callApi: vi.fn().mockResolvedValue({ logProbs }),
       } as unknown as ApiProvider;
 
       const result: GradingResult = await runAssertion({
@@ -1797,7 +1800,7 @@ print(json.dumps(eval(value)))`,
     it('should pass when the cost is below the threshold', async () => {
       const cost = 0.0005;
       const provider = {
-        callApi: jest.fn().mockResolvedValue({ cost }),
+        callApi: vi.fn().mockResolvedValue({ cost }),
       } as unknown as ApiProvider;
 
       const result: GradingResult = await runAssertion({
@@ -1818,7 +1821,7 @@ print(json.dumps(eval(value)))`,
     it('should fail when the cost exceeds the threshold', async () => {
       const cost = 0.002;
       const provider = {
-        callApi: jest.fn().mockResolvedValue({ cost }),
+        callApi: vi.fn().mockResolvedValue({ cost }),
       } as unknown as ApiProvider;
 
       const result: GradingResult = await runAssertion({

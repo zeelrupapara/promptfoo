@@ -1,15 +1,18 @@
 import { Telemetry } from '../src/telemetry';
 import packageJson from '../package.json';
 import { fetchWithTimeout } from '../src/fetch';
+import { vi, beforeEach, afterEach, describe, expect, test, it } from 'vitest';
 
-jest.mock('../src/fetch', () => ({
-  fetchWithTimeout: jest.fn(),
+
+
+vi.mock('../src/fetch', () => ({
+  fetchWithTimeout: vi.fn(),
 }));
-jest.mock('../src/util', () => ({
-  maybeRecordFirstRun: jest.fn(),
+vi.mock('../src/util', () => ({
+  maybeRecordFirstRun: vi.fn(),
 }));
 
-jest.mock('../package.json', () => ({
+vi.mock('../package.json', () => ({
   version: '1.0.0',
 }));
 
@@ -19,7 +22,7 @@ describe('Telemetry', () => {
   beforeEach(() => {
     originalEnv = process.env;
     process.env = { ...originalEnv };
-    (fetchWithTimeout as jest.Mock).mockClear();
+    (fetchWithTimeout as vi.Mock).mockClear();
   });
 
   afterEach(() => {
@@ -45,7 +48,7 @@ describe('Telemetry', () => {
   });
 
   it('should send events and clear events array when telemetry is enabled and send is called', async () => {
-    (fetchWithTimeout as jest.Mock).mockResolvedValue({ ok: true });
+    (fetchWithTimeout as vi.Mock).mockResolvedValue({ ok: true });
 
     const telemetry = new Telemetry();
     telemetry.record('eval_ran', { foo: 'bar' });

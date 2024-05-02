@@ -1,18 +1,20 @@
 import { getLatestVersion, checkForUpdates } from '../src/updates';
 import { fetchWithTimeout } from '../src/fetch';
 import packageJson from '../package.json';
+import { vi, beforeEach, afterEach, describe, expect, test, it } from 'vitest';
 
-jest.mock('../src/fetch', () => ({
-  fetchWithTimeout: jest.fn(),
+
+vi.mock('../src/fetch', () => ({
+  fetchWithTimeout: vi.fn(),
 }));
 
-jest.mock('../package.json', () => ({
+vi.mock('../package.json', () => ({
   version: '0.11.0',
 }));
 
 describe('getLatestVersion', () => {
   it('should return the latest version of the package', async () => {
-    (fetchWithTimeout as jest.Mock).mockResolvedValueOnce({
+    (fetchWithTimeout as vi.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ 'dist-tags': { latest: '1.1.0' } }),
     });
@@ -22,7 +24,7 @@ describe('getLatestVersion', () => {
   });
 
   it('should throw an error if the response is not ok', async () => {
-    (fetchWithTimeout as jest.Mock).mockResolvedValueOnce({
+    (fetchWithTimeout as vi.Mock).mockResolvedValueOnce({
       ok: false,
     });
 
@@ -34,15 +36,15 @@ describe('getLatestVersion', () => {
 
 describe('checkForUpdates', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    (console.log as jest.Mock).mockRestore();
+    (console.log as vi.Mock).mockRestore();
   });
 
   it('should log an update message if a newer version is available - minor ver', async () => {
-    (fetchWithTimeout as jest.Mock).mockResolvedValueOnce({
+    (fetchWithTimeout as vi.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ 'dist-tags': { latest: '0.12.0' } }),
     });
@@ -52,7 +54,7 @@ describe('checkForUpdates', () => {
   });
 
   it('should log an update message if a newer version is available - major ver', async () => {
-    (fetchWithTimeout as jest.Mock).mockResolvedValueOnce({
+    (fetchWithTimeout as vi.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ 'dist-tags': { latest: '1.1.0' } }),
     });
@@ -62,7 +64,7 @@ describe('checkForUpdates', () => {
   });
 
   it('should not log an update message if the current version is up to date', async () => {
-    (fetchWithTimeout as jest.Mock).mockResolvedValueOnce({
+    (fetchWithTimeout as vi.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ 'dist-tags': { latest: packageJson.version } }),
     });
